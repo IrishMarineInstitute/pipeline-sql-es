@@ -4,6 +4,7 @@ import requests
 import collections
 import time
 import argparse
+import platform
 
 start = time.time()
 
@@ -17,6 +18,11 @@ parser.add_argument("-p","--password", help="SQL server password")
 args = parser.parse_args()
 
 #Variables
+
+if platform.system() == 'Windows':
+    driver = 'SQL Server'
+else:
+    driver = 'ODBC Driver 17 for SQL Server'
 
 if args.sql:
     server = str(args.sql)
@@ -258,7 +264,7 @@ es_init_for_all_vesslNames = '''
 requests.delete(es_base_url + es_index_name_all)
 requests.put(es_base_url + es_index_name_all, headers = headers, data = es_init_for_all_events)
 
-cnxn = pyodbc.connect('DRIVER={SQL Server};SERVER='+server+';UID='+username+';PWD='+password)
+cnxn = pyodbc.connect('DRIVER={'+driver+'};SERVER='+server+';UID='+username+';PWD='+password)
 cursor = cnxn.cursor()
 
 cursor.execute("SELECT [CFR], [Country Code], [Vessel Name], [Port Code], [Port Name], [Loa], [Lbp], [Event Code],[Event Start Date],[Event End Date], [Power Main], [Ton Ref] FROM [InformaticsLoad].[dbo].[MasterVessel];") 
@@ -300,7 +306,7 @@ cnxn.close()
 
 #populate index for first search, vessel by name or cfr
 
-vesselname_cnxn = pyodbc.connect('DRIVER={SQL Server};SERVER='+server+';UID='+username+';PWD='+password)
+vesselname_cnxn = pyodbc.connect('DRIVER={'+driver+'};SERVER='+server+';UID='+username+';PWD='+password)
 
 requests.delete(es_base_url + es_index_name_by_vesselName)
 requests.put(es_base_url + es_index_name_by_vesselName, headers = headers, data = es_init_for_all_vesslNames)
